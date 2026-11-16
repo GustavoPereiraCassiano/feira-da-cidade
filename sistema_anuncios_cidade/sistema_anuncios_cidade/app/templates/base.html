@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Feira da Cidade{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark nav-main">
+ <div class="container"><a class="navbar-brand fw-bold" href="{{ url_for('main.home') }}">FEIRA DA CIDADE</a>
+ <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+ <div class="collapse navbar-collapse" id="nav"><div class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+ <a class="nav-link" href="{{ url_for('main.home') }}">Início</a>
+ {% if current_user.is_authenticated %}
+   {% if current_user.role == 'seller' %}
+   <a class="nav-link" href="{{ url_for('ads.create') }}">Anunciar produto</a><a class="nav-link" href="{{ url_for('ads.mine') }}">Meus anúncios</a><a class="nav-link" href="{{ url_for('chat.seller_inbox') }}">Conversas</a><a class="nav-link" href="{{ url_for('auth.profile') }}">Perfil</a>
+   {% else %}<a class="nav-link" href="{{ url_for('admin.dashboard') }}">Painel admin</a>{% endif %}
+   <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-light">Sair</button></form>
+ {% else %}<a class="nav-link" href="{{ url_for('auth.login') }}">Entrar</a><a class="btn btn-sm btn-light" href="{{ url_for('auth.register') }}">Quero anunciar</a>{% endif %}
+ </div></div></div>
+</nav>
+<main class="container py-4">
+ {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }} alert-dismissible fade show">{{ message }}<button class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endwith %}
+ {% block content %}{% endblock %}
+</main>
+<footer class="text-center py-4 text-muted small">Sistema de Anúncios da Cidade · Negociação diretamente entre comprador e vendedor.</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body></html>

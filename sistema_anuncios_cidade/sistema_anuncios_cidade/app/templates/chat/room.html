@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block content %}<div class="chat-box"><h1 class="h4">Conversa sobre: {{ conversation.ad.title }}</h1><p class="text-muted">Comprador: {{ conversation.buyer_name }}</p><div id="messages" class="messages">{% for m in conversation.messages %}<div class="message {{ 'mine' if (buyer_mode and m.sender_type == 'buyer') or (not buyer_mode and m.sender_type == 'seller') else '' }}"><small>{{ 'Vendedor' if m.sender_type == 'seller' else conversation.buyer_name }} · {{ m.created_at.strftime('%H:%M') }}</small><div>{{ m.body }}</div></div>{% endfor %}</div><form id="chat-form" class="d-flex gap-2"><input id="message" class="form-control" maxlength="2000" placeholder="Digite sua mensagem..." required><button class="btn btn-primary">Enviar</button></form><div class="small text-muted mt-2">Mantenha a negociação e os cuidados de segurança entre as partes.</div></div>{% endblock %}
+{% block scripts %}<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script><script>
+const socket = io(); const conversationId = {{ conversation.id }}; const senderType = {{ ('buyer' if buyer_mode else 'seller')|tojson }};
+socket.emit('join_conversation', {conversation_id: conversationId});
+const box = document.getElementById('messages');
+function addMessage(m){const el=document.createElement('div');el.className='message '+(m.sender_type===senderType?'mine':'');const small=document.createElement('small');small.textContent=(m.sender_type==='seller'?'Vendedor':'{{ conversation.buyer_name|e }}')+' · '+m.created_at;const body=document.createElement('div');body.textContent=m.body;el.append(small,body);box.append(el);box.scrollTop=box.scrollHeight;}
+socket.on('new_message', addMessage);
+document.getElementById('chat-form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('message');if(input.value.trim()){socket.emit('send_message',{conversation_id:conversationId,body:input.value.trim(),sender_type:senderType});input.value='';}});
+box.scrollTop=box.scrollHeight;
+</script>{% endblock %}
